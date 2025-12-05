@@ -1,11 +1,7 @@
 /**
- * Telegram Bot Worker v3.41
+ * Telegram Bot Worker v3.42
  * 更新日志:
- * 1. [优化] 欢迎语与验证消息分离：现在会先发欢迎语，再发独立的验证请求消息。
- * 2. [新增] 欢迎语支持媒体：在后台设置欢迎语时，直接发送图片/视频/GIF即可。
- * 3. [新增] 欢迎语昵称：支持 {name} 占位符，点击可跳转用户资料。
- * 4. [修复] 验证小程序：修复了验证通过后 WebApp 无法自动关闭的问题。
- * 5. [优化] 时区修正 (UTC+8) 与 自动回复格式校验。
+ * 1. [优化] 资料卡完善：无用户名的用户，现在资料卡中的链接字段会显示名字并支持点击跳转 (tg://user?id=...)。
  */
 
 // --- 1. 静态配置 ---
@@ -53,7 +49,7 @@ export default {
         if (req.method === "GET") {
             // 验证页面路由
             if (url.pathname === "/verify") return handleVerifyPage(url, env);
-            if (url.pathname === "/") return new Response("Bot v3.41 Active", { status: 200 });
+            if (url.pathname === "/") return new Response("Bot v3.42 Active", { status: 200 });
         }
         if (req.method === "POST") {
             // 验证 Token 提交路由
@@ -799,7 +795,8 @@ const getUMeta = (tgUser, dbUser, d) => {
     const id = tgUser.id.toString(), name = (tgUser.first_name||"")+(tgUser.last_name?" "+tgUser.last_name:"");
     const note = dbUser.user_info && dbUser.user_info.note ? `\n📝 <b>备注:</b> ${escape(dbUser.user_info.note)}` : "";
     const userLink = tgUser.username ?
-        `<a href="tg://user?id=${id}">@${tgUser.username}</a>` : `<code>无</code>`;
+        `<a href="tg://user?id=${id}">@${tgUser.username}</a>` : 
+        `<a href="tg://user?id=${id}">👤 ${escape(name)} (点击直达)</a>`; // [修复] 无用户名时的跳转链接
     // 时区修正 (UTC+8)
     const timeStr = new Date(d*1000).toLocaleString('zh-CN', { timeZone: 'Asia/Shanghai', hour12: false });
     return { userId: id, name, username: tgUser.username, topicName: `${name} |
